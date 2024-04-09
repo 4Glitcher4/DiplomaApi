@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    container_name: postgres-deploma-api
+    environment:
+      POSTGRES_PASSWORD: user
+      POSTGRES_DB: DeplomaApi
+    ports:
+      - 5432:5432

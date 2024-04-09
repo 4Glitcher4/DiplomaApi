@@ -1,0 +1,53 @@
+﻿using DiplomeApi.DataRepository.GenericRepository;
+using DiplomeApi.DataRepository.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace DiplomeApi.Controllers
+{
+    [ApiController]
+    [Route("/api/logs")]
+    public class LogsController : ControllerBase
+    {
+        private readonly IEntityRepository<Log> _logRepository;
+        public LogsController(IEntityRepository<Log> logRepository)
+        {
+            _logRepository = logRepository;
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<Log>> Get()
+        {
+            try
+            {
+                return Ok(_logRepository.AsQueryable().ToList());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post(dynamic obj)
+        {
+            try
+            {
+                Log entity = JsonSerializer.Deserialize<Log>(obj, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                await _logRepository.InsertOneAsync(entity);
+                await _logRepository.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+    }
+}
