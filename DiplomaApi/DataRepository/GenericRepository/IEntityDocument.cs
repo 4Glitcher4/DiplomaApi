@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DiplomeApi.DataRepository.GenericRepository
+namespace DiplomaApi.DataRepository.GenericRepository
 {
     public interface IEntityDocument
     {

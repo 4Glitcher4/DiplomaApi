@@ -1,10 +1,10 @@
-﻿using DiplomeApi.DataRepository.GenericRepository;
-using DiplomeApi.DataRepository.Models;
+﻿using DiplomaApi.DataRepository.GenericRepository;
+using DiplomaApi.DataRepository.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DiplomeApi.Controllers
+namespace DiplomaApi.Controllers
 {
     [ApiController]
     [Route("/api/logs")]

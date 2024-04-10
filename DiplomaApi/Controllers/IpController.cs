@@ -1,10 +1,10 @@
-﻿using DiplomeApi.DataRepository.GenericRepository;
-using DiplomeApi.DataRepository.Models;
+﻿using DiplomaApi.DataRepository.GenericRepository;
+using DiplomaApi.DataRepository.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text.Json;
 
-namespace DiplomeApi.Controllers
+namespace DiplomaApi.Controllers
 {
     [ApiController]
     [Route("/api/ip")]

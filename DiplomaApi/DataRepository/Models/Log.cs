@@ -1,7 +1,7 @@
-﻿using DiplomeApi.DataRepository.GenericRepository;
+﻿using DiplomaApi.DataRepository.GenericRepository;
 using System.Text.Json.Serialization;
 
-namespace DiplomeApi.DataRepository.Models
+namespace DiplomaApi.DataRepository.Models
 {
     public class Log : EntityDocument
     {

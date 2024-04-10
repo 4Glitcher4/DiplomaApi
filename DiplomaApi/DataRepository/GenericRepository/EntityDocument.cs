@@ -1,4 +1,4 @@
-﻿namespace DiplomeApi.DataRepository.GenericRepository
+﻿namespace DiplomaApi.DataRepository.GenericRepository
 {
     public class EntityDocument : IEntityDocument
     {

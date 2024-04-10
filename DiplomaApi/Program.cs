@@ -1,5 +1,5 @@
-using DiplomeApi.DataRepository.GenericRepository;
-using DiplomeApi;
+using DiplomaApi.DataRepository.GenericRepository;
+using DiplomaApi;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 

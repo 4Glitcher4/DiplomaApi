@@ -1,10 +1,10 @@
-﻿using DiplomeApi.DataRepository.Models;
+﻿using DiplomaApi.DataRepository.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using System.Transactions;
 
-namespace DiplomeApi
+namespace DiplomaApi
 {
     public class ApplicationDbContext : DbContext
     {

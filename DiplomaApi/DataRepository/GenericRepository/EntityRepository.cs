@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
-namespace DiplomeApi.DataRepository.GenericRepository
+namespace DiplomaApi.DataRepository.GenericRepository
 {
     public class EntityRepository<TEntityDocument> : IEntityRepository<TEntityDocument>
             where TEntityDocument : class, IEntityDocument

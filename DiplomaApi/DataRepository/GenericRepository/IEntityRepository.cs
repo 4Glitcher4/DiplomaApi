@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace DiplomeApi.DataRepository.GenericRepository
+namespace DiplomaApi.DataRepository.GenericRepository
 {
     public interface IEntityRepository<TEntityDocument>
             where TEntityDocument : class, IEntityDocument
