@@ -5,9 +5,9 @@ services:
   db:
     image: postgres
     restart: always
-    container_name: postgres-deploma-api
+    container_name: postgres-diploma-api
     environment:
       POSTGRES_PASSWORD: user
-      POSTGRES_DB: DeplomaApi
+      POSTGRES_DB: DiplomaApi
     ports:
       - 5432:5432
