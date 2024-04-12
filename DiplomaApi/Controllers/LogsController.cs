@@ -57,7 +57,7 @@ namespace DiplomaApi.Controllers
             string pythonInterpreter = "python";
 
             // Путь к Python скрипту, который анализирует pcap файлы
-            string pythonScript = "C:/Users/user/Desktop/dos-attack-detection-via-deep-learning-main/detector/src/pcap/analyzer.py";
+            string pythonScript = "C:/Users/user/Desktop/dos-attack-detection-via-deep-learning-main/detector/src/pcap/asd.py";
 
             // Аргументы, передаваемые в Python скрипт
             string arguments = "C:/Users/user/Desktop/lab1.pcap";
@@ -79,6 +79,8 @@ namespace DiplomaApi.Controllers
                 // Чтение вывода Python скрипта
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
+
+                var ips = JsonSerializer.Deserialize<List<string>>(output);
 
                 // Вывод результата и ошибок, если есть
                 Console.WriteLine("Output:");
