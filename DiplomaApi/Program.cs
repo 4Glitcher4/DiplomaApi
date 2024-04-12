@@ -8,6 +8,16 @@ using DiplomaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Policy", builder =>
+    {
+        builder.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin();
+    });
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -35,8 +45,9 @@ builder.Services.AddSingleton<ISmtpSettings>(provider =>
     provider.GetRequiredService<IOptions<SmtpSettings>>().Value);
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISmtpService, SmtpService>();
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped(typeof(IEntityRepository<>), typeof(EntityRepository<>));
-
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
@@ -65,6 +76,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.UseResponseCaching();
+
+app.UseCors("Policy");
 
 app.MapControllers();
 
