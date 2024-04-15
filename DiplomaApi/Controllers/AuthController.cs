@@ -46,7 +46,7 @@ namespace DiplomaApi.Controllers
                     TokenLifeTime = DateTime.Now.AddMinutes(10),
                 });
 
-                _smtpService.SendMessage($"http://localhost:6743/api/auth/callback/{token}", new SendDto
+                _smtpService.SendMessage($"http://192.168.31.106:6743/api/auth/callback/{token}", new SendDto
                 {
                     Login = user.Login,
                     Subject = "DiplomaApi"
@@ -66,8 +66,8 @@ namespace DiplomaApi.Controllers
             try
             {
                 var user = await _userRepository.FindOneAsync(doc => doc.Login == userDto.Login);
-                if (user != null)
-                    return BadRequest($"Пользователь с {userDto.Login} уже существует.");
+                if (user == null)
+                    return BadRequest($"Пользователя с {userDto.Login} не существует.");
                 if (user.Password != _userService.Encrypt(userDto.Password))
                     return BadRequest();
                 if (!user.IsVerify)
@@ -102,7 +102,7 @@ namespace DiplomaApi.Controllers
                     TokenLifeTime = DateTime.Now.AddMinutes(10),
                 });
 
-                _smtpService.SendMessage($"http://localhost:6743/api/auth/callback/{token}", new SendDto
+                _smtpService.SendMessage($"http://192.168.31.106:6743/api/auth/callback/{token}", new SendDto
                 {
                     Login = user.Login,
                     Subject = "DiplomaApi"
@@ -131,7 +131,7 @@ namespace DiplomaApi.Controllers
                 await _userRepository.ReplaceOneAsync(user);
                 await _userRepository.SaveChangesAsync();
 
-                return Redirect("http://localhost:6743/swagger");
+                return Redirect("http://192.168.31.106:6743/swagger");
             }
             catch (Exception ex)
             {

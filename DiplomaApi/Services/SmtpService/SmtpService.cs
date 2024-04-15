@@ -19,7 +19,7 @@ namespace DiplomaApi.Services
             var rawhtml = string.Empty;
             try
             {
-                using (StreamReader reader = new StreamReader($"{Directory.GetCurrentDirectory()}/smtp/Verify.html"))
+                using (StreamReader reader = new StreamReader($"{Directory.GetCurrentDirectory()}/Smtp/Verify.html"))
                     rawhtml = reader.ReadToEnd();
 
                 rawhtml = Regex.Replace(rawhtml, @"" + $"%URL%" + "", $"{url}");
