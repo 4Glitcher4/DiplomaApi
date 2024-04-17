@@ -1,4 +1,7 @@
-﻿using DiplomaApi.Services;
+﻿using DiplomaApi.DataRepository.GenericRepository;
+using DiplomaApi.DataRepository.Models;
+using DiplomaApi.ModelsDto;
+using DiplomaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -11,11 +14,17 @@ namespace DiplomaApi.Controllers
     [Authorize]
     public class AnalyzeController : ControllerBase
     {
+        private readonly IEntityRepository<UserLog> _userLogRepository;
         private readonly IFileService _fileService;
+        private readonly IUserService _userService;
 
-        public AnalyzeController(IFileService fileService)
+        public AnalyzeController(IEntityRepository<UserLog> userLogRepository,
+            IFileService fileService, 
+            IUserService userService)
         {
+            _userLogRepository = userLogRepository;
             _fileService = fileService;
+            _userService = userService;
         }
 
         [HttpPost]
@@ -26,7 +35,7 @@ namespace DiplomaApi.Controllers
                 string pythonInterpreter = "python";
 
                 // Путь к Python скрипту, который анализирует pcap файлы
-                string pythonScript = "C:/Users/user/Desktop/dos-attack-detection-via-deep-learning-main/detector/src/pcap/asd.py";
+                string pythonScript = "C:/Users/user/Desktop/dos-attack-detection-via-deep-learning-main/detector/src/api_entrypoint.py";
 
                 using (var memoryStream = new MemoryStream())
                 {
@@ -53,7 +62,19 @@ namespace DiplomaApi.Controllers
                         string output = process.StandardOutput.ReadToEnd();
                         string error = process.StandardError.ReadToEnd();
 
-                        var ips = JsonSerializer.Deserialize<List<string>>(output);
+                        var ips = JsonSerializer.Deserialize<List<LogDto>>(output);
+                        var userLogs = new List<UserLog>();
+                        foreach(var ip in ips)
+                        {
+                            userLogs.Add(new UserLog
+                            {
+                                 IpAddress = ip.IpAddress,
+                                 RequestCount = ip.RequestCount,
+                                 UserId = int.Parse(_userService.GetClaimValue(ClaimType.UserId))
+                            });
+                        }
+                        await _userLogRepository.InsertManyAsync(userLogs);
+                        await _userLogRepository.SaveChangesAsync();
 
                         // Возвращаем сообщение о успешной верификации
                         return Ok(ips);
