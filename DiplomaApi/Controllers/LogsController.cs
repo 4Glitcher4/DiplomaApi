@@ -1,5 +1,6 @@
 ﻿using DiplomaApi.DataRepository.GenericRepository;
 using DiplomaApi.DataRepository.Models;
+using DiplomaApi.Helpers.FilterHelper;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text.Json;
@@ -17,12 +18,14 @@ namespace DiplomaApi.Controllers
             _logRepository = logRepository;
         }
 
+
         [HttpGet]
+        [FilterHelper(typeof(Log))]
         public ActionResult<IEnumerable<Log>> Get()
         {
             try
             {
-                return Ok(_logRepository.AsQueryable().ToList());
+                return Ok(_logRepository.AsQueryable());
             }
             catch (Exception ex)
             {
