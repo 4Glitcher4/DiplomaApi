@@ -8,91 +8,56 @@ using System.Text.RegularExpressions;
 
 namespace DiplomaApi.Helpers.FilterHelper
 {
-    public class FilterHelperAttribute : ActionFilterAttribute
+    public class FilterHelperAttribute<T> : ActionFilterAttribute
     {
-        private readonly Type _filterType;
-
-        public FilterHelperAttribute(Type filterType)
-        {
-            _filterType = filterType;
-        }
-
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            var query = context.HttpContext.Request.Query["$filter"].ToString();
+            var filter = context.HttpContext.Request.Query["$filter"].ToString();
+            var sort = context.HttpContext.Request.Query["$sort"].ToString();
+            var take = context.HttpContext.Request.Query["$take"].ToString();
+            var skip = context.HttpContext.Request.Query["$skip"].ToString();
 
-            if (!string.IsNullOrEmpty(query))
-            {
-                var filters = ParseFilters(query);
+            var filters = ParseFilters(filter);
+            // Применяем фильтры к результату запроса
+            (IQueryable result, int count) = ((IQueryable, int))ApplyFilters(context.Result as OkObjectResult, filters, skip, take, sort);
 
-                // Применяем фильтры к результату запроса
-                var result = ApplyFilters(context.Result as OkObjectResult, filters);
+            // Заменяем результат запроса отфильтрованным результатом
+            var executedResult = context.Result as ObjectResult;
+            executedResult.Value = new { count = count, result = result };
 
-                // Заменяем результат запроса отфильтрованным результатом
-                var executedResult = context.Result as ObjectResult;
-                executedResult.Value = result;
-            }
         }
 
-        private dynamic ParseFilters(string query)
+        private dynamic ParseFilters(string filter)
         {
             var regex = new Regex(@"(\w+)\s*(gt|ls)\s*([\d.-]+)");
-            var matches = regex.Matches(query);
+            var matches = regex.Matches(filter);
 
-            var filters = matches.Select(match => new
+            var filters = matches.Select(match => new FieldFilter
             {
                 Field = match.Groups[1].Value,
                 Operator = match.Groups[2].Value,
-                Value = Convert.ChangeType(match.Groups[3].Value, _filterType.GetProperty(match.Groups[1].Value).PropertyType) // Преобразуем значение в соответствующий тип
+                Value = Convert.ChangeType(match.Groups[3].Value, typeof(T).GetProperty(match.Groups[1].Value).PropertyType) // Преобразуем значение в соответствующий тип
             }).ToList();
 
             return filters;
         }
 
-        private IQueryable ApplyFilters(OkObjectResult result, dynamic filters)
+        private (IQueryable result, int count) ApplyFilters(OkObjectResult result, List<FieldFilter> filters, string skip, string take, string sort)
         {
-            var queryable = result.Value as IQueryable;
+            var queryable = result.Value as IQueryable<T>;
 
             if (queryable != null)
             {
-                foreach (var filter in filters)
-                {
-                    var field = filter.Field;
-                    var value = filter.Value;
-
-                    // Создаем выражение для фильтрации
-                    var parameter = Expression.Parameter(_filterType, "x");
-                    var property = Expression.Property(parameter, field);
-                    var constant = Expression.Constant(value, value.GetType());
-                    BinaryExpression comparison;
-
-                    if (filter.Operator == "gt")
-                    {
-                        comparison = Expression.GreaterThan(property, constant);
-                    }
-                    else if (filter.Operator == "ls")
-                    {
-                        comparison = Expression.LessThan(property, constant);
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    var lambda = Expression.Lambda(comparison, parameter);
-                    var whereCallExpression = Expression.Call(
-                        typeof(Queryable),
-                        nameof(Enumerable.Where),
-                        new[] { _filterType },
-                        queryable.Expression,
-                        lambda);
-
-                    queryable = queryable.Provider.CreateQuery(whereCallExpression);
-                }
-
-                return queryable;
+                var count = queryable.Count();
+                // Применяем сортировку
+                var results = queryable.ApplyFilter(filters)
+                    .ApplySort(sort)
+                    .Skip(skip)
+                    .Take(take);
+                
+                return (results, count);
             }
-            return filters;
+            return (queryable, 0);
         }
     }
 }

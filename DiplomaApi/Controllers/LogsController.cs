@@ -20,7 +20,7 @@ namespace DiplomaApi.Controllers
 
 
         [HttpGet]
-        [FilterHelper(typeof(Log))]
+        [FilterHelper<Log>]
         public ActionResult<IEnumerable<Log>> Get()
         {
             try
