@@ -1,11 +1,17 @@
 ﻿using DiplomaApi.DataRepository.GenericRepository;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace DiplomaApi.DataRepository.Models
 {
     public class Log : EntityDocument
     {
+
+        [ForeignKey(nameof(User))]
+        public int? UserId { get; set; }
+        public virtual User? User { get; set; }
+
         [JsonPropertyName("ip")]
         public string Ip {  get; set; } = string.Empty;
 

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DiplomaApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240417113357_UserLogMigration")]
-    partial class UserLogMigration
+    [Migration("20240424053621_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,7 +72,12 @@ namespace DiplomaApi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "request_count");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Logs");
                 });
@@ -105,38 +110,11 @@ namespace DiplomaApi.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("DiplomaApi.DataRepository.Models.UserLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("RequestCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLogs");
-                });
-
-            modelBuilder.Entity("DiplomaApi.DataRepository.Models.UserLog", b =>
+            modelBuilder.Entity("DiplomaApi.DataRepository.Models.Log", b =>
                 {
                     b.HasOne("DiplomaApi.DataRepository.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

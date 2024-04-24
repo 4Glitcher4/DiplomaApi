@@ -1,6 +1,8 @@
 ﻿using DiplomaApi.DataRepository.GenericRepository;
 using DiplomaApi.DataRepository.Models;
 using DiplomaApi.Helpers.FilterHelper;
+using DiplomaApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text.Json;
@@ -13,9 +15,13 @@ namespace DiplomaApi.Controllers
     public class LogsController : ControllerBase
     {
         private readonly IEntityRepository<Log> _logRepository;
-        public LogsController(IEntityRepository<Log> logRepository)
+        private readonly IUserService _userService;
+
+        public LogsController(IEntityRepository<Log> logRepository,
+            IUserService userService)
         {
             _logRepository = logRepository;
+            _userService = userService;
         }
 
 
@@ -26,6 +32,23 @@ namespace DiplomaApi.Controllers
             try
             {
                 return Ok(_logRepository.AsQueryable());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/api/userLogs")]
+        [FilterHelper<Log>]
+        [Authorize]
+        public ActionResult<IEnumerable<Log>> GetUserLog()
+        {
+            try
+            {
+                var userId = _userService.GetClaimValue(ClaimType.UserId);
+
+                return Ok(_logRepository.AsQueryable().Where(doc => doc.UserId == int.Parse(userId)));
             }
             catch (Exception ex)
             {

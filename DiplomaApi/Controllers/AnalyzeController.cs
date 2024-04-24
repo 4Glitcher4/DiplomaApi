@@ -14,15 +14,15 @@ namespace DiplomaApi.Controllers
     [Authorize]
     public class AnalyzeController : ControllerBase
     {
-        private readonly IEntityRepository<UserLog> _userLogRepository;
+        private readonly IEntityRepository<Log> _logRepository;
         private readonly IFileService _fileService;
         private readonly IUserService _userService;
 
-        public AnalyzeController(IEntityRepository<UserLog> userLogRepository,
+        public AnalyzeController(IEntityRepository<Log> logRepository,
             IFileService fileService, 
             IUserService userService)
         {
-            _userLogRepository = userLogRepository;
+            _logRepository = logRepository;
             _fileService = fileService;
             _userService = userService;
         }
@@ -63,18 +63,19 @@ namespace DiplomaApi.Controllers
                         string error = process.StandardError.ReadToEnd();
 
                         var ips = JsonSerializer.Deserialize<List<LogDto>>(output);
-                        var userLogs = new List<UserLog>();
+                        var userLogs = new List<Log>();
                         foreach(var ip in ips)
                         {
-                            userLogs.Add(new UserLog
+                            userLogs.Add(new Log
                             {
-                                 IpAddress = ip.IpAddress,
+                                 Ip = ip.IpAddress,
                                  RequestCount = ip.RequestCount,
+                                 CreatedAt = DateTime.UtcNow,
                                  UserId = int.Parse(_userService.GetClaimValue(ClaimType.UserId))
                             });
                         }
-                        await _userLogRepository.InsertManyAsync(userLogs);
-                        await _userLogRepository.SaveChangesAsync();
+                        await _logRepository.InsertManyAsync(userLogs);
+                        await _logRepository.SaveChangesAsync();
 
                         // Возвращаем сообщение о успешной верификации
                         return Ok(ips);
