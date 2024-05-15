@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DiplomaApi.Services;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//builder.WebHost.UseUrls("http://192.168.31.107:6743");
 
 builder.Services.AddCors(options =>
 {
@@ -49,6 +52,10 @@ builder.Services.AddScoped<ISmtpService, SmtpService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped(typeof(IEntityRepository<>), typeof(EntityRepository<>));
 
+builder.Services.Configure<PrometheusSettings>(builder.Configuration.GetSection("ApiKeys"));
+builder.Services.AddSingleton<IPrometheusSettings>(provider =>
+    provider.GetRequiredService<IOptions<PrometheusSettings>>().Value);
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
@@ -61,6 +68,12 @@ builder.Services.AddAuthentication("Bearer")
                 Encoding.ASCII.GetBytes(builder.Configuration["UserSettings:SecretKey"]))
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("PrometheusPolicy", policy =>
+        policy.Requirements.Add(new PrometheusService()));
+});
 
 var app = builder.Build();
 
@@ -80,6 +93,7 @@ app.UseResponseCaching();
 app.UseCors("Policy");
 
 app.MapControllers();
+app.MapMetrics().RequireAuthorization("PrometheusPolicy");
 
 app.Run();
 
