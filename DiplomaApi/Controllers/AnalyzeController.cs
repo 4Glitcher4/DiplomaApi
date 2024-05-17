@@ -5,6 +5,7 @@ using DiplomaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace DiplomaApi.Controllers
@@ -19,7 +20,7 @@ namespace DiplomaApi.Controllers
         private readonly IUserService _userService;
 
         public AnalyzeController(IEntityRepository<Log> logRepository,
-            IFileService fileService, 
+            IFileService fileService,
             IUserService userService)
         {
             _logRepository = logRepository;
@@ -32,11 +33,6 @@ namespace DiplomaApi.Controllers
         {
             try
             {
-                string pythonInterpreter = "python";
-
-                // Путь к Python скрипту, который анализирует pcap файлы
-                string pythonScript = "C:/Users/user/Desktop/dos-attack-detection-via-deep-learning-main/detector/src/api_entrypoint.py";
-
                 using (var memoryStream = new MemoryStream())
                 {
                     await pcapFile.CopyToAsync(memoryStream);
@@ -46,39 +42,39 @@ namespace DiplomaApi.Controllers
                     string filePath = await _fileService.SaveFile(pcapBytes);
 
                     // Создание процесса для вызова Python скрипта
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    using (var client = new HttpClient())
                     {
-                        FileName = pythonInterpreter,
-                        Arguments = $"{pythonScript} {filePath} {senderCount}",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    using (Process process = Process.Start(startInfo))
-                    {
-                        // Чтение вывода Python скрипта
-                        string output = process.StandardOutput.ReadToEnd();
-                        string error = process.StandardError.ReadToEnd();
-
-                        var ips = JsonSerializer.Deserialize<List<LogDto>>(output);
-                        var userLogs = new List<Log>();
-                        foreach(var ip in ips)
+                        var request = await client.PostAsync("http://ddos_detector_ai:5000/api/detect", new MultipartFormDataContent
                         {
-                            userLogs.Add(new Log
+                            { new StringContent(filePath), "filePath" },
+                            { new StringContent(senderCount.ToString()), "senderCount" }
+                        });
+                        if (request.IsSuccessStatusCode)
+                        {
+                            var response = await request.Content.ReadAsStringAsync();
+                            Console.WriteLine(response);
+                            var ips = JsonSerializer.Deserialize<List<LogDto>>(response);
+                            var userLogs = new List<Log>();
+                            foreach (var ip in ips)
                             {
-                                 Ip = ip.IpAddress,
-                                 RequestCount = ip.RequestCount,
-                                 CreatedAt = DateTime.UtcNow,
-                                 UserId = int.Parse(_userService.GetClaimValue(ClaimType.UserId))
-                            });
-                        }
-                        await _logRepository.InsertManyAsync(userLogs);
-                        await _logRepository.SaveChangesAsync();
+                                userLogs.Add(new Log
+                                {
+                                    Ip = ip.IpAddress,
+                                    RequestCount = ip.RequestCount,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UserId = int.Parse(_userService.GetClaimValue(ClaimType.UserId))
+                                });
+                            }
+                            await _logRepository.InsertManyAsync(userLogs);
+                            await _logRepository.SaveChangesAsync();
 
-                        // Возвращаем сообщение о успешной верификации
-                        return Ok(ips);
+                            // Возвращаем сообщение о успешной верификации
+                            return Ok(ips);
+                        }
+                        else
+                        {
+                            return Ok(new List<string>());
+                        }
                     }
                 }
             }

@@ -14,8 +14,8 @@ namespace DiplomaApi.Services
         {
             try
             {
-                var filePath = Directory.GetCurrentDirectory() + $"/Pcap/{_userService.GetClaimValue(ClaimType.UserId)}.pcap";
-                //var filePath = Directory.GetCurrentDirectory() + $"/Pcap/FILEUPLOAD.pcap";
+                var filePath = $"/Pcap/{_userService.GetClaimValue(ClaimType.UserId)}.pcap";
+                //var filePath = $"/Pcap/FILEUPLOAD.pcap";
                 await File.WriteAllBytesAsync(filePath, pcapBytes);
 
                 return filePath;

@@ -1,13 +1,49 @@
 version: '3.9'
 
 services:
-
   db:
     image: postgres
     restart: always
-    container_name: postgres-diploma-api
+    container_name: postgres_database
     environment:
       POSTGRES_PASSWORD: user
-      POSTGRES_DB: DiplomaApi
+      POSTGRES_DB: DeplomaApi
+    networks:
+      - bridgenetwork
     ports:
       - 5432:5432
+
+  api:
+    image: 4glitcher4/diploma_api
+    container_name: ddos_detector_api
+    restart: always
+    user: root
+    volumes:
+      - app_data:/Pcap
+    networks:
+      - bridgenetwork
+    ports:
+      - 8080:8080
+
+  ai:
+    image: 4glitcher4/ddos_detector
+    container_name: ddos_detector_ai
+    user: root
+    restart: always
+    volumes:
+      - app_data:/Pcap
+    cap_add:
+      - NET_ADMIN  # Добавляем CAP_NET_ADMIN для управления сетью
+    devices:
+      - "/dev/net/tun:/dev/net/tun"  # Добавляем доступ к сетевым устройствам
+    networks:
+      - bridgenetwork
+    ports:
+      - 5000:5000
+
+volumes:
+  app_data:
+
+networks:
+  bridgenetwork:
+    driver: bridge
