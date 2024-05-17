@@ -41,6 +41,24 @@ services:
     ports:
       - 5000:5000
 
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    networks:
+      - bridgenetwork
+    ports:
+      - 3000:3000
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    networks:
+      - bridgenetwork
+    ports:
+      - 9090:9090
+
 volumes:
   app_data:
 
