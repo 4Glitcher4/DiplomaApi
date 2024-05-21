@@ -65,3 +65,16 @@ volumes:
 networks:
   bridgenetwork:
     driver: bridge
+
+
+# Это нужно добавить в конфиг прометеуса для того, чтобы он счал метрики нашего сервиса 
+
+#- job_name: 'ddos_detect_api'
+#    scrape_interval: 15s
+#    authorization:
+#      type: "Bearer"
+#      credentials: "u3vrugQ88fH6Rf2NJkRwgIFBW4NVj11xb07DUHBZC8eMwir8dc"
+#    params:
+#      url: ['http://ddos_detector_api:8080/metrics']
+#    static_configs:
+#      - targets: ['ddos_detector_api:8080']
