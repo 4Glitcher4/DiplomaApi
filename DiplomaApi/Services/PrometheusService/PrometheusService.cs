@@ -11,7 +11,7 @@ namespace DiplomaApi.Services
 
                 var httpContext = context.Resource as HttpContext;
                 var settings = httpContext.RequestServices.GetService<IPrometheusSettings>();
-                var value = httpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+                var value = httpContext.Request.Headers["ApiKey"].ToString();
                 if (value != settings.ApiKey)
                     return Task.Run(() =>
                     {
