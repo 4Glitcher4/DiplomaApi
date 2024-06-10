@@ -1,10 +1,15 @@
 ﻿using DiplomaApi.DataRepository.GenericRepository;
 using DiplomaApi.DataRepository.Models;
 using DiplomaApi.Helpers.FilterHelper;
+using DiplomaApi.ModelsDto;
 using DiplomaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -32,6 +37,55 @@ namespace DiplomaApi.Controllers
             try
             {
                 return Ok(_logRepository.AsQueryable());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/api/userLogs/weekly")]
+        [Authorize]
+        public ActionResult<IEnumerable<Log>> GetWeekly()
+        {
+            try
+            {
+                var userId = _userService.GetClaimValue(ClaimType.UserId);
+
+                var weelkyLogs = _logRepository.AsQueryable()
+                    .Where(doc => doc.UserId == int.Parse(userId))
+                    .ToList();
+
+                List<DayOfWeek> week = new List<DayOfWeek>
+                {
+                     DayOfWeek.Monday,
+                     DayOfWeek.Tuesday,
+                     DayOfWeek.Wednesday,
+                     DayOfWeek.Thursday,
+                     DayOfWeek.Friday,
+                     DayOfWeek.Saturday,
+                    DayOfWeek.Sunday
+                };
+                var query = week.AsQueryable()
+                    .GroupJoin(weelkyLogs, day => day, request => request.CreatedAt.DayOfWeek, (day, requests) => new { day, requests })
+                    .Select(joinResult => joinResult).ToList();
+
+                var result = new List<WeeklyDto>();
+
+                foreach(var dayOfWeek in query)
+                {
+                    var maxRequest = dayOfWeek.requests?.Max(doc => doc?.RequestCount);
+                    var res = new WeeklyDto
+                    {
+                        Day = dayOfWeek.day.ToString(),
+                        Ip = weelkyLogs.FirstOrDefault(doc => doc.RequestCount == maxRequest)?.Ip ?? "",
+                        ReqestCount = maxRequest ?? 0,
+                    };
+
+                    result.Add(res);
+                }
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
