@@ -1,16 +1,6 @@
 version: '3.9'
 
 services:
-
-
-  site:
-    image: mihasuper277075/web-site
-    container_name: ddos_detector_site
-    networks:
-      - bridgenetwork
-    ports:
-      - 8085:6111
-
   db:
     image: postgres
     restart: always
@@ -73,6 +63,19 @@ services:
     ports:
       - 9090:9090
 
+
+ site:
+    image: mihasuper277075/web-site
+    container_name: ddos_detector_site
+    networks:
+      - bridgenetwork
+    ports:
+      - 8085:6111
+    links:
+     - ddos_detector_api
+
+
+     
 volumes:
   pgdata:
   app_data:
