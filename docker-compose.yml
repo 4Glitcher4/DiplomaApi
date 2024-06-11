@@ -62,9 +62,8 @@ services:
       - bridgenetwork
     ports:
       - 9090:9090
-
-
- site:
+ 
+  site:
     image: mihasuper277075/web-site
     container_name: ddos_detector_site
     networks:
