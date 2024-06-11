@@ -9,7 +9,7 @@ services:
     networks:
       - bridgenetwork
     ports:
-      - 80:6111
+      - 8085:6111
 
   db:
     image: postgres
