@@ -46,7 +46,7 @@ namespace DiplomaApi.Controllers
                     TokenLifeTime = DateTime.Now.AddMinutes(10),
                 });
 
-                _smtpService.SendMessage($"http://192.168.31.106:6743/api/auth/callback/{token}", new SendDto
+                _smtpService.SendMessage($"http://server:8580/api/auth/callback/{token}", new SendDto
                 {
                     Login = user.Login,
                     Subject = "DiplomaApi"
@@ -102,7 +102,7 @@ namespace DiplomaApi.Controllers
                     TokenLifeTime = DateTime.Now.AddMinutes(10),
                 });
 
-                _smtpService.SendMessage($"http://192.168.31.106:6743/api/auth/callback/{token}", new SendDto
+                _smtpService.SendMessage($"http://server:8580/api/auth/callback/{token}", new SendDto
                 {
                     Login = user.Login,
                     Subject = "DiplomaApi"
@@ -131,7 +131,7 @@ namespace DiplomaApi.Controllers
                 await _userRepository.ReplaceOneAsync(user);
                 await _userRepository.SaveChangesAsync();
 
-                return Redirect("http://192.168.31.106:6743/swagger");
+                return Redirect("http://server:8085");
             }
             catch (Exception ex)
             {
