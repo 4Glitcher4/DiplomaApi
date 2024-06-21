@@ -8,7 +8,6 @@ services:
     environment:
       POSTGRES_PASSWORD: user
       POSTGRES_DB: DeplomaApi
-
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -16,7 +15,7 @@ services:
     ports:
       - 5432:5432
 
-  api:
+  ddos_detector_api:
     image: 4glitcher4/diploma_api
     container_name: ddos_detector_api
     restart: always
@@ -44,7 +43,6 @@ services:
     ports:
       - 5000:5000
 
-
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -70,15 +68,12 @@ services:
       - bridgenetwork
     ports:
       - 8085:6111
-    links:
-     - ddos_detector_api
+    depends_on:
+      - ddos_detector_api
 
-
-     
 volumes:
   pgdata:
   app_data:
-
 
 networks:
   bridgenetwork:
